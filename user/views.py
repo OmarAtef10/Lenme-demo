@@ -27,8 +27,9 @@ def postLoan(request, userName):
         return JsonResponse({"Error": "You Already have an active loan"})
     else:
         amount = request.data['amount']
+        loan_period = request.data['loan_period']
         print(amount)
-        loan = Loan(amount=amount)
+        loan = Loan(amount=amount, loan_period=loan_period)
         loan.save()
         user.loan = loan
         user.save()
@@ -42,8 +43,7 @@ def getOffers(request, userName):
     offers = list(Offer.objects.filter(loan=user.loan))
     res = {"Offers": []}
     for offer in offers:
-        temp = {"ID": offer.id, "investor": offer.investor.name, "Interest": offer.interest_rate,
-                "loan_period": offer.loan_period}
+        temp = {"ID": offer.id, "investor": offer.investor.name, "Interest": offer.interest_rate}
         res["Offers"].append(temp)
     return JsonResponse(res)
 
@@ -59,12 +59,14 @@ def acceptOffer(request, userName, offerId):
         return JsonResponse({"Error": "Loan Already Funded!"})
     else:
         loan = user.loan
-        loan.total_amount = loan.amount + (loan.amount * (offer.interest_rate/100)) + 3
-        loan.return_date = datetime.now() + relativedelta(months=offer.loan_period)
+        loan.total_amount = loan.amount + ((loan.amount * ((offer.interest_rate/100))) * loan.loan_period/12) + 3
+        loan.return_date = datetime.now() + relativedelta(months=+loan.loan_period)
         loan.status = "FUNDED"
         loan.investor = offer.investor
         loan.save()
         investor = offer.investor
-        investor.balance -= loan.amount
+        investor.balance -= (loan.amount + 3)
         investor.save()
         return JsonResponse({"Success": "Offer Accepted!"})
+
+#TODO installments!!

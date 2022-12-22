@@ -9,6 +9,7 @@ from .serializers import InvestorSerializer
 from .models import Investor
 from loan.models import Loan
 
+
 # Create your views here.
 
 class InvestorViewSet(viewsets.ModelViewSet):
@@ -22,13 +23,12 @@ def addOffer(request, investorName):
     investor = Investor.objects.get(name=investorName)
     loan_id = request.data['loan_id']
     loan = Loan.objects.get(pk=loan_id)
-    if loan.amount > investor.balance:
+    if loan.amount+3 > investor.balance:
         return JsonResponse({"Forbidden": "Insufficient balance"})
     else:
-        date = request.data['date']
         interest = request.data['interest']
         try:
-            offer = Offer(investor=investor, interest_rate=interest, loan=loan, loan_period=date)
+            offer = Offer(investor=investor, interest_rate=interest, loan=loan)
             offer.save()
             return JsonResponse({"Success": "Offer Added!"})
         except:

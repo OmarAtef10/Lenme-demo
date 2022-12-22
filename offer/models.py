@@ -8,7 +8,6 @@ class Offer(models.Model):
     investor = models.ForeignKey(Investor, on_delete=models.CASCADE)
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
     interest_rate = models.PositiveIntegerField(default=0)
-    loan_period = models.PositiveIntegerField(default=0)
 
     class Meta:
         unique_together = ('investor', 'loan',)
