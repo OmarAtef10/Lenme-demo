@@ -96,6 +96,9 @@ def pay_month_installment(request, userName, month):
         date = date.month
         if month == date:
             amount = month_installment.amount
+            investor = user.loan.investor
+            investor.balance += amount
+            investor.save()
             month_installment.delete()
             installments.remove(month_installment)
             if len(installments) == 0:
@@ -132,6 +135,9 @@ def pay_all_installment(request, userName):
         loan = user.loan
         loan.status = 'COMPLETED'
         loan.save()
+        investor = user.loan.investor
+        investor.balance += amount
+        investor.save()
         user.loan = None
         user.save()
         return JsonResponse({"Success": f"All Installments Paid Loan total value {amount} Status is COMPLETED"})
