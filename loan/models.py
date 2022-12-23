@@ -5,7 +5,8 @@ from investor.models import Investor
 
 STATUS = {
     ("OPEN", "OPEN"),
-    ("FUNDED", "FUNDED")
+    ("FUNDED", "FUNDED"),
+    ("COMPLETED", "COMPLETED")
 }
 
 

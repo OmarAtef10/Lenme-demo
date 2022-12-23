@@ -6,7 +6,7 @@ from rest_framework.decorators import api_view
 
 from offer.models import Offer
 from .serializers import UserSerializer
-from .models import User
+from .models import User, Installemnts
 from loan.models import Loan
 from datetime import date, datetime
 from dateutil.relativedelta import relativedelta
@@ -48,7 +48,6 @@ def getOffers(request, userName):
     return JsonResponse(res)
 
 
-@csrf_exempt
 @api_view(['GET'])
 def acceptOffer(request, userName, offerId):
     user = User.objects.get(name=userName)
@@ -59,7 +58,7 @@ def acceptOffer(request, userName, offerId):
         return JsonResponse({"Error": "Loan Already Funded!"})
     else:
         loan = user.loan
-        loan.total_amount = loan.amount + ((loan.amount * ((offer.interest_rate/100))) * loan.loan_period/12) + 3
+        loan.total_amount = loan.amount + ((loan.amount * ((offer.interest_rate / 100))) * loan.loan_period / 12) + 3
         loan.return_date = datetime.now() + relativedelta(months=+loan.loan_period)
         loan.status = "FUNDED"
         loan.investor = offer.investor
@@ -67,6 +66,72 @@ def acceptOffer(request, userName, offerId):
         investor = offer.investor
         investor.balance -= (loan.amount + 3)
         investor.save()
+        addInstallments(loan)
         return JsonResponse({"Success": "Offer Accepted!"})
 
-#TODO installments!!
+
+def addInstallments(loan):
+    amount = loan.total_amount / loan.loan_period
+    for i in range(1, loan.loan_period + 1):
+        installment = Installemnts(loan=loan, amount=amount, loan_month=i,
+                                   pay_day=datetime.now() + relativedelta(months=+loan.loan_period))
+        installment.save()
+
+
+@api_view(['GET'])
+def pay_month_installment(request, userName, month):
+    user = User.objects.get(name=userName)
+    if user.loan == None:
+        return JsonResponse({"Error": "User Doesn't Have Any Active Loans"})
+    installments = list(Installemnts.objects.filter(loan=user.loan))
+    if len(installments) == 0:
+        loan = user.loan
+        loan.status = "COMPLETED"
+        loan.save()
+        user.loan = None
+        user.save()
+        return JsonResponse({"Error": f"No installments Available and Loan Status is now COMPLETED"})
+    for month_installment in installments:
+        date = datetime.now() + relativedelta(months=+month_installment.loan_month)
+        date = date.month
+        if month == date:
+            amount = month_installment.amount
+            month_installment.delete()
+            installments.remove(month_installment)
+            if len(installments) == 0:
+                loan = user.loan
+                loan.status = "COMPLETED"
+                loan.save()
+                user.loan = None
+                user.save()
+                return JsonResponse(
+                    {"Success": f"Paid installment for month {month} with amount {amount} and Loan Status is now "
+                                f"COMPLETED"})
+            return JsonResponse({"Success": f"Paid installment for month {month} with amount {amount}"})
+        return JsonResponse({"Error": "Month Not Found"})
+
+
+@api_view(['GET'])
+def pay_all_installment(request, userName):
+    user = User.objects.get(name=userName)
+    if user.loan == None:
+        return JsonResponse({"Error": "User Doesn't Have Any Active Loans"})
+    installments = list(Installemnts.objects.filter(loan=user.loan))
+    if len(installments) == 0:
+        loan = user.loan
+        loan.status = "COMPLETED"
+        loan.save()
+        user.loan = None
+        user.save()
+        return JsonResponse({"Error": f"No installments Available and Loan Status is now COMPLETED"})
+    else:
+        amount = 0
+        for installment in installments:
+            amount += installment.amount
+            installment.delete()
+        loan = user.loan
+        loan.status = 'COMPLETED'
+        loan.save()
+        user.loan = None
+        user.save()
+        return JsonResponse({"Success": f"All Installments Paid Loan total value {amount} Status is COMPLETED"})

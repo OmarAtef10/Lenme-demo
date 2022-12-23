@@ -9,3 +9,13 @@ class User(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Installemnts(models.Model):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+    amount = models.PositiveIntegerField(default=0)
+    loan_month = models.PositiveIntegerField()
+    pay_day = models.DateField()
+
+    def __str__(self):
+        return f"{self.loan_month} for {self.loan}"

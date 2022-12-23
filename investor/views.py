@@ -23,8 +23,10 @@ def addOffer(request, investorName):
     investor = Investor.objects.get(name=investorName)
     loan_id = request.data['loan_id']
     loan = Loan.objects.get(pk=loan_id)
-    if loan.amount+3 > investor.balance:
+    if loan.amount + 3 > investor.balance:
         return JsonResponse({"Forbidden": "Insufficient balance"})
+    if loan.status != "OPEN":
+        return JsonResponse({"Error": "User No Longer Receiving Offers"})
     else:
         interest = request.data['interest']
         try:
