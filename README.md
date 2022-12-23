@@ -22,9 +22,13 @@ Install the project with pip
 | :-------- | :------- | :------------------------- |
 | `userName` | `string` | **Required**. name of user who adds a loan |
 
-Json Body for Request:- {
+Json Body for Request:- 
+``` json
+{
 "amount":5000,
-"loan_period":6 }
+"loan_period":6 
+}
+```
 
 #### investor add offer
 
@@ -36,11 +40,13 @@ Json Body for Request:- {
 | :-------- | :------- | :-------------------------------- |
 | `investorName`      | `string` | **Required**. name of investor to add a Offer |
 
-Json Body for Request :- {
+Json Body for Request :- 
+```json
+{
 "loan_id": <int>,
 "interest": <int>
 }
-
+```
 #### user get all offers
 
 ```http
@@ -51,7 +57,9 @@ Json Body for Request :- {
 | :-------- | :------- | :-------------------------------- |
 | `userName`      | `string` | **Required**. name of user who requested a loan |
 
-Sample Json Response :- {
+Sample Json Response :-
+```json 
+{
 "Offers": [
 {
 "ID": 6,
@@ -59,7 +67,7 @@ Sample Json Response :- {
 "Interest": 15 }
 ]
 }
-
+```
 #### user accept offer
 
 ```http
@@ -71,10 +79,13 @@ Sample Json Response :- {
 | `userName`      | `string` | **Required**. name of user who requested a loan |
 | `offerId`      | `int` | **Required**. ID of the offer on the user's Loan |
 
-Sample Json Response:- {
+Sample Json Response:-
+
+```json
+{
 "Success": "Offer Accepted!"
 }
-
+```
 #### user pay month installment
 
 ```http
@@ -88,10 +99,12 @@ Sample Json Response:- {
 
 ps: month is only added for simulation purpose i could make user pay installment of the current month only
 
-Sample Json Response:- {
+Sample Json Response:- 
+``` json
+{
 "Success": "Paid installment for month 1 with amount 896"
 }
-
+```
 #### user pay all installments
 
 ```http
